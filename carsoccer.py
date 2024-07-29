@@ -96,6 +96,21 @@ def create_car(space, width, height):
     return l
 
 
+def create_ball(space, radius, mass):
+    body = pymunk.Body(body_type=pymunk.Body.DYNAMIC)
+    body.position = (500, 300)
+    # SHAPE STATS
+    shape = pymunk.Circle(body, radius)
+    shape.mass = mass
+    shape.color = (*blue, 100)
+    shape.elasticity = 1.2
+    shape.friction = 0.3
+    shape.pair_index = "wall"
+    # ADD TO SIMULATION
+    space.add(body, shape)
+    return shape
+
+
 def play():
 
     run = True
@@ -107,9 +122,27 @@ def play():
     space.gravity = (0, 600)
     create_boundaries(space, width, height)
     car1, car2 = create_car(space, width, height)
+    ball = create_ball(space, 40, 100)
+    on_ground = False
     while run:
 
         keys = pygame.key.get_pressed()
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w]:
+            direction = -1
+            car1.body.angle = math.pi / 2
+        if keys[pygame.K_a]:
+            if on_ground:
+                direction = -1  # LEFT
+                car1.body.apply_impulse_at_local_point((-2000, 0), (0, 0))
+            else:
+                car1.body.angle -= 0.08
+        if keys[pygame.K_d]:
+            if on_ground:
+                direction = 1  # RIGHT
+                car1.body.apply_impulse_at_local_point((2000, 0), (0, 0))
+            else:
+                car1.body.angle += 0.08
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
