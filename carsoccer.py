@@ -111,6 +111,13 @@ def create_ball(space, radius, mass):
     return shape
 
 
+def draw(space, window, draw_options):
+
+    window.fill(blue)
+    space.debug_draw(draw_options)
+    pygame.display.update()
+
+
 def play():
 
     run = True
@@ -127,7 +134,6 @@ def play():
     while run:
 
         keys = pygame.key.get_pressed()
-        keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
             direction = -1
             car1.body.angle = math.pi / 2
@@ -143,15 +149,21 @@ def play():
                 car1.body.apply_impulse_at_local_point((2000, 0), (0, 0))
             else:
                 car1.body.angle += 0.08
+        if keys[pygame.K_c]:
+            car1.body.apply_impulse_at_local_point((1800 * direction, 0), (0, 0))
+        if keys[pygame.K_g]:
+            car1.body.position -= (10, 0)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            # JUMP
 
+            if pygame.mouse.get_pressed()[0]:
+                ball.body.position = (car1.body.position[0], car1.body.position[1] - 55)
+        draw(space, window, draw_options)
         space.step(dt)
         clock.tick(FPS)
-        window.fill(blue)
-        space.debug_draw(draw_options)
-        pygame.display.update()
 
     pygame.quit()
 
