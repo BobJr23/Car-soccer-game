@@ -14,6 +14,11 @@ red = (200, 0, 0)
 grey = (105, 105, 105)
 blue = (66, 185, 189)
 FONT = pygame.font.Font(None, 40)
+c1 = pygame.image.load("car.png")
+c1 = pygame.transform.flip(c1, flip_x=True, flip_y=False)
+c1 = pygame.transform.scale(c1, (60, 30))
+bal = pygame.image.load("ball.png")
+bal = pygame.transform.scale(bal, (80, 80))
 
 
 def calculate_distance(p1, p2):
@@ -68,6 +73,29 @@ def create_boundaries(space, width, height):
     return l[0]
 
 
+def create_car(space, width, height):
+    l = []
+    x = 0
+    rects = [
+        [(100, height - 120), (60, 30), (*blue, 100), 120],
+        [(900, height - 120), (60, 30), (*blue, 100), 120],
+    ]
+    for pos, size, color, mass in rects:
+        x += 1
+        body = pymunk.Body()
+        body.position = pos
+        shape = pymunk.Poly.create_box(body, size, radius=1)
+        shape.color = color
+        shape.mass = mass
+        shape.elasticity = 0.4
+        shape.friction = 0.4
+
+        space.add(body, shape)
+        l.append(shape)
+
+    return l
+
+
 def play():
 
     run = True
@@ -78,6 +106,7 @@ def play():
     draw_options = pymunk.pygame_util.DrawOptions(window)
     space.gravity = (0, 600)
     create_boundaries(space, width, height)
+    car1, car2 = create_car(space, width, height)
     while run:
 
         keys = pygame.key.get_pressed()
