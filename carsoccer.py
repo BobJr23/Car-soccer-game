@@ -21,12 +21,6 @@ bal = pygame.image.load("ball.png")
 bal = pygame.transform.scale(bal, (80, 80))
 
 
-def only_collide_same(arbiter, space, data):
-    a, b = arbiter.shapes
-
-    return False
-
-
 def calculate_distance(p1, p2):
     return math.sqrt((p2[1] - p1[1]) ** 2 + (p2[0] - p1[0]) ** 2)
 
@@ -35,6 +29,13 @@ def calculate_angle(p1, p2):
     return math.atan2(p2[1] - p1[1], p2[0] - p1[0])
 
 
+def only_collide_same(arbiter, space, data):
+    a, b = arbiter.shapes
+
+    return False
+
+
+# DONT CHANGE
 def create_boundaries(space, width, height):
     l = []
     rects = [
@@ -117,11 +118,64 @@ def create_ball(space, radius, mass):
     return shape
 
 
-def draw(space, window, draw_options):
-
+def draw(
+    space, window, draw_options, car1, car2, on_ground, jump_counter, direction, ball
+):
     window.fill(blue)
     space.debug_draw(draw_options)
+    resets = []
+    # COULD LOOP
+    resets.append(pygame.draw.rect(window, red, (0, 20, width, 3)))  # TOP
+    resets.append(pygame.draw.rect(window, red, (0, height - 20, width, 3)))  # BOTTOM
+    resets.append(pygame.draw.rect(window, red, (width - 90, height / 2 + 30, 120, 3)))
+    resets.append(pygame.draw.rect(window, red, (width - 90, 140, 120, 3)))
+    resets.append(pygame.draw.rect(window, red, (width - 90, height / 2 + 30, 120, 3)))
+    resets.append(pygame.draw.rect(window, red, (width - 90, 140, 120, 3)))
+    resets.append(pygame.draw.rect(window, red, (0, height / 2 + 30, 90, 3)))
+    resets.append(pygame.draw.rect(window, red, (0, 140, 90, 3)))
+    goal1 = pygame.draw.rect(window, green, (10, 170, 5, 120))
+    goal2 = pygame.draw.rect(window, green, (width - 15, 170, 5, 120))
+    ball_rect = pygame.draw.rect(
+        window,
+        blue,
+        (
+            ball.body.position[0] - 40,
+            ball.body.position[1] - 40,
+            81,
+            81,
+        ),
+    )
+    # [
+    #     (width - 10, 130),
+    #     (120, 20),
+    # ],
+    # [
+    #     (width - 10, height / 2 + 40),
+    #     (120, 20),
+    # ],
+    down = pygame.draw.rect(
+        window, red, (car1.body.position[0], car1.body.position[1], 1, 33)
+    )
+    if pygame.Rect.collidelist(ball_rect, [goal1, goal2]) != -1:
+        print("goal")
+        ball.body.position = (width / 2, height / 2)
+    if pygame.Rect.collidelist(down, resets) != -1:
+        jump_counter = 1
+        car1.body.angle = 0
+        on_ground = True
+    else:
+        on_ground = False
+    if direction == 1:
+        shown = c1
+    else:
+        shown = pygame.transform.flip(c1, flip_x=True, flip_y=False)
+
+    shown = pygame.transform.rotate(shown, -1 * (car1.body.angle * (180 / math.pi)))
+    window.blit(shown, (car1.body.position[0] - 30, car1.body.position[1] - 14))
+    window.blit(bal, (ball.body.position[0] - 40, ball.body.position[1] - 40))
+
     pygame.display.update()
+    return on_ground, jump_counter, down, ball_rect
 
 
 def play():
