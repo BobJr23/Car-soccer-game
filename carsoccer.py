@@ -21,6 +21,12 @@ bal = pygame.image.load("ball.png")
 bal = pygame.transform.scale(bal, (80, 80))
 
 
+def only_collide_same(arbiter, space, data):
+    a, b = arbiter.shapes
+
+    return False
+
+
 def calculate_distance(p1, p2):
     return math.sqrt((p2[1] - p1[1]) ** 2 + (p2[0] - p1[0]) ** 2)
 
@@ -119,20 +125,25 @@ def draw(space, window, draw_options):
 
 
 def play():
-
+    direction = 1
+    on_ground = False
+    jump_counter = 0
     run = True
     clock = pygame.time.Clock()
     FPS = 60
     dt = 1 / FPS
     space = pymunk.Space()
-    draw_options = pymunk.pygame_util.DrawOptions(window)
+    h = space.add_collision_handler(1, 2)
+    h.begin = only_collide_same
     space.gravity = (0, 600)
+
+    # ball = create_ball(space, 30, 10)
+
     create_boundaries(space, width, height)
     car1, car2 = create_car(space, width, height)
-    ball = create_ball(space, 40, 100)
-    on_ground = False
+    draw_options = pymunk.pygame_util.DrawOptions(window)
+    ball = create_ball(space, 40, 4)
     while run:
-
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w]:
             direction = -1
@@ -149,19 +160,41 @@ def play():
                 car1.body.apply_impulse_at_local_point((2000, 0), (0, 0))
             else:
                 car1.body.angle += 0.08
+        # BOOSTING
         if keys[pygame.K_c]:
             car1.body.apply_impulse_at_local_point((1800 * direction, 0), (0, 0))
         if keys[pygame.K_g]:
             car1.body.position -= (10, 0)
-
+        # if keys[pygame.K_v] and jump_counter > 0:
+        # car1.body.apply_impulse_at_local_point((0, -20000), (0, 0))
+        # jump_counter -= 1
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
             # JUMP
+            if event.type == pygame.KEYDOWN and jump_counter > 0:
+                if event.key == pygame.K_v:
+                    car1.body.apply_impulse_at_local_point((0, -30000), (0, 0))
+                    jump_counter -= 1
+                if pygame.Rect.colliderect(ball_rect, down):
+                    print("purple shot")
 
             if pygame.mouse.get_pressed()[0]:
                 ball.body.position = (car1.body.position[0], car1.body.position[1] - 55)
-        draw(space, window, draw_options)
+            # BOOST
+            # if pygame.mouse.get_pressed()[0]:
+            #     car1.body.apply_impulse_at_local_point((5000, 0), (0, 0))
+        on_ground, jump_counter, down, ball_rect = draw(
+            space,
+            window,
+            draw_options,
+            car1,
+            car2,
+            on_ground,
+            jump_counter,
+            direction,
+            ball,
+        )
         space.step(dt)
         clock.tick(FPS)
 
