@@ -8,3 +8,7 @@ Clone the project, then
 and then
 
 ```python carsoccer.py```
+
+or run the carsoccer.exe file
+
+controls are wasd and cg
